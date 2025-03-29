@@ -36,8 +36,9 @@ class WarhammerScraper {
     this.axiosInstance = axios.create({
       timeout: 10000,
       headers: {
-        'User-Agent': 'Custom Bot (respectful scraping for personal project)',
-        'Accept': 'text/html',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
       }
     });
   }
@@ -60,13 +61,22 @@ class WarhammerScraper {
 
   async scrapeArticle(element: cheerio.Element, $: cheerio.Root): Promise<WarhammerArticle | null> {
     try {
-      const title = $(element).find('.article-title').text().trim();
-      const url = $(element).find('a').attr('href') || '';
-      const date = $(element).find('.article-date').text().trim();
+      // Log the raw HTML for debugging
+      Logger.debug('Article HTML:', $(element).html());
+
+      // Try multiple possible selectors
+      const title = $(element).find('.article-title, .title, h2, h3').first().text().trim();
+      const url = $(element).find('a').first().attr('href') || '';
+      const date = $(element).find('.article-date, .date, time').first().text().trim();
+      
+      Logger.debug('Found article:', { title, url, date });
+
+      const contentText = $(element).text().toLowerCase();
+      Logger.debug('Article text:', contentText);
       
       const factions = Object.entries(factionKeywords).reduce((acc, [faction, keywords]) => {
-        const contentText = $(element).text().toLowerCase();
         if (keywords.some(keyword => contentText.includes(keyword))) {
+          Logger.debug(`Found faction ${faction} with keyword match`);
           acc.push(faction);
         }
         return acc;
@@ -99,11 +109,15 @@ class WarhammerScraper {
     return RequestQueue.enqueue(async () => {
       try {
         const response = await this.createRequest(`${WARHAMMER_DOMAIN}${WARHAMMER_NEWS_PATH}`);
+        Logger.debug('Response status:', response.status);
+        
         const $ = cheerio.load(response.data);
         const articles: WarhammerArticle[] = [];
 
-        const elements = $('.article-card').toArray();
-        
+        // Try multiple possible article container selectors
+        const elements = $('.article-card, article, .post, .news-item').toArray();
+        Logger.debug(`Found ${elements.length} potential articles`);
+
         for (const element of elements) {
           await new Promise(resolve => 
             setTimeout(resolve, Math.random() * 2000 + 1000)

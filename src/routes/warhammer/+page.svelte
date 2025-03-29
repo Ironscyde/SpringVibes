@@ -1,41 +1,96 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { ArticleService } from '$lib/services/articleService';
+	import { Logger } from '$lib/utils/logger';
+
+	interface Article {
+		title: string;
+		url: string;
+		date: string;
+		factions: string[];
+	}
+
+	const factionData = [
+		{
+			id: 'leagues-of-votann',
+			title: 'Leagues of Votann',
+			description: 'Latest news about the mighty Leagues of Votann:'
+		},
+		{
+			id: 'adeptus-custodes',
+			title: 'Adeptus Custodes',
+			description: 'Recent updates for the Emperor\'s finest guardians:'
+		},
+		{
+			id: 'orks',
+			title: 'Orks',
+			description: 'WAAAGH! Latest Ork news:'
+		}
+	];
+
+	let articlesByFaction: Record<string, Article[]> = {};
+	let loading = true;
+	let error: string | null = null;
+
+	onMount(async () => {
+		try {
+			const articleData: Record<string, Article[]> = {};
+			
+			for (const faction of factionData) {
+				const articles = await ArticleService.getArticlesByFaction(faction.id);
+				articleData[faction.id] = articles;
+			}
+			
+			articlesByFaction = articleData;
+		} catch (err) {
+			Logger.error('Error fetching articles:', err);
+			error = 'Failed to load articles. Please try again later.';
+		} finally {
+			loading = false;
+		}
+	});
 </script>
 
-<svelte:head>
-	<title>Warhammer</title>
-	<meta name="description" content="Warhammer page" />
-</svelte:head>
-
-<main>
-	<h1>Welcome to Warhammer</h1>
-	<section>
-		<h2>About Warhammer</h2>
-		<p>Warhammer is a tabletop miniature wargame with a rich fantasy universe. Players collect, paint, and battle with armies of miniature figures representing various factions in a grim, dark fantasy world.</p>
-	</section>
-
-	<section>
-		<h2>Popular Factions</h2>
-		<ul>
-			<li>Space Marines</li>
-			<li>Orks</li>
-			<li>Tyranids</li>
-			<li>Eldar</li>
-			<li>Chaos</li>
-		</ul>
-	</section>
-
-	<section>
-		<h2>Getting Started</h2>
-		<p>To begin your journey in the Warhammer universe:</p>
-		<ol>
-			<li>Choose your faction</li>
-			<li>Get your first set of miniatures</li>
-			<li>Learn the basic rules</li>
-			<li>Start painting your army</li>
-			<li>Find local gaming groups</li>
-		</ol>
-	</section>
-</main>
+<div class="max-w-4xl mx-auto py-8 px-4">
+	<h1 class="text-4xl font-bold mb-8">Warhammer 40,000 News</h1>
+	
+	{#if loading}
+		<div class="flex justify-center items-center min-h-[200px]">
+			<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+		</div>
+	{:else if error}
+		<div class="flex justify-center items-center min-h-[200px]">
+			<div class="text-red-500">{error}</div>
+		</div>
+	{:else}
+		<div class="space-y-12">
+			{#each factionData as faction}
+				<section class="border rounded-lg p-6 shadow-sm">
+					<h2 class="text-2xl font-semibold mb-4">{faction.title}</h2>
+					<p class="text-gray-700 mb-4">{faction.description}</p>
+					
+					<div class="space-y-4">
+						{#if articlesByFaction[faction.id]?.length > 0}
+							{#each articlesByFaction[faction.id] as article}
+								<a
+									href={article.url}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="block p-4 border rounded hover:bg-gray-50 transition-colors"
+								>
+									<h3 class="font-medium">{article.title}</h3>
+									<p class="text-sm text-gray-500">{article.date}</p>
+								</a>
+							{/each}
+						{:else}
+							<p class="text-gray-500 italic">No recent articles found</p>
+						{/if}
+					</div>
+				</section>
+			{/each}
+		</div>
+	{/if}
+</div>
 
 <style>
 	main {

@@ -25,6 +25,21 @@
 			id: 'orks',
 			title: 'Orks',
 			description: 'WAAAGH! Latest Ork news:'
+		},
+		{
+			id: 'mission-pack',
+			title: 'Mission Packs',
+			description: 'Latest mission packs and battle scenarios for Warhammer 40,000 10th Edition:'
+		},
+		{
+			id: 'errata',
+			title: 'Errata & FAQs',
+			description: 'Official errata and frequently asked questions for Warhammer 40,000 10th Edition:'
+		},
+		{
+			id: 'rules-update',
+			title: 'Rules Updates',
+			description: 'Core rules updates and changes for Warhammer 40,000 10th Edition:'
 		}
 	];
 

@@ -23,7 +23,10 @@ const CACHE_TTL = 1000 * 60 * 60; // 1 hour
 const factionKeywords = {
   'leagues-of-votann': ['leagues of votann', 'votann', 'kin'],
   'adeptus-custodes': ['adeptus custodes', 'custodian', 'custodes'],
-  'orks': ['orks', 'orkz', 'greenskins']
+  'orks': ['orks', 'orkz', 'greenskins'],
+  'mission-pack': ['mission pack', 'missions', '10th edition missions', 'battle pack'],
+  'errata': ['errata', 'faq', 'frequently asked questions', '10th edition errata'],
+  'rules-update': ['rules update', 'rules changes', '10th edition rules', 'core rules update']
 };
 
 class WarhammerScraper {
